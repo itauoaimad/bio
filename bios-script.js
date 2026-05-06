@@ -66,15 +66,12 @@ function showAdVideo(code) {
 
     modal.style.display = 'flex';
     copyBtn.style.display = 'none';
-    timerEl.textContent = '⏳ انتظر 5 ثوان...';
+    timerEl.textContent = '⏳ انتظر 10 ثوان...';
     timerEl.style.display = 'block';
 
-    // ✅ تشغيل Social Bar مع المودال
-    const socialScript = document.createElement('script');
-    socialScript.src = 'https://pl29348799.profitablecpmratenetwork.com/1a/41/b4/1a41b44b67233fd170cbe9a61e33a3f0.js';
-    document.body.appendChild(socialScript);
+    // ✅ بدون window.open - الإعلان داخل iframe
 
-    let sec = 5;
+    let sec = 10;
     adTimer = setInterval(() => {
         sec--;
         timerEl.textContent = '⏳ انتظر ' + sec + ' ثوان...';
@@ -82,6 +79,7 @@ function showAdVideo(code) {
             clearInterval(adTimer);
             timerEl.style.display = 'none';
             copyBtn.style.display = 'block';
+            toast('✅ يمكنك النسخ الآن!');
         }
     }, 1000);
 }
@@ -241,9 +239,14 @@ function copyDet(){
     if(curBio && curBio.premium){
         showAdVideo(code);
     } else {
-        // ✅ SmartLink يفتح كل مرة
-        window.open('https://www.profitablecpmratenetwork.com/k62ytna8c?key=893628396662fcc931588e140d2c0fb8', '_blank');
-        navigator.clipboard.writeText(code).then(()=>toast('✅ Bio Copied!'));
+        // ✅ نسخ أولاً
+        navigator.clipboard.writeText(code).then(()=>{
+            toast('✅ Bio Copied!');
+            // ✅ ثم SmartLink بعد 0.5 ثانية
+            setTimeout(function(){
+                window.open('https://www.profitablecpmratenetwork.com/k62ytna8c?key=893628396662fcc931588e140d2c0fb8', '_blank');
+            }, 500);
+        });
     }
 }
 
