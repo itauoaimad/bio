@@ -66,9 +66,15 @@ function showAdVideo(code) {
 
     modal.style.display = 'flex';
     copyBtn.style.display = 'none';
-    timerEl.textContent = '⏳ انتظر 10 ثوان...';
+    timerEl.textContent = '⏳ انتظر 15 ثوان...';
     timerEl.style.display = 'block';
-
+  // ✅ تحميل الإعلان في الحاوية المخفية ثم إظهارها
+    const adContainer = document.getElementById('ad-iframe-container');
+    const adIframe = document.getElementById('ad-iframe');
+    if (adContainer && adIframe) {
+    adIframe.src = 'https://www.profitablecpmratenetwork.com/k62ytna8c?key=893628396662fcc931588e140d2c0fb8';
+    adContainer.style.display = 'block';
+}
     // ✅ بدون window.open - الإعلان داخل iframe
 
     let sec = 10;
@@ -269,7 +275,7 @@ const edTpls=[
     {name:'Shadow',sub:'shdw',tpl:'[808080]░░[ [ffffff][NAME] [808080]]░░'},
     {name:'Matrix',sub:'mtrx',tpl:'[00ff00]01001 10110\n[ffffff][NAME]\n[00ff00]10110 01001'},
 ];
-let curTpl=edTpls[0], edCols=['#FF0000','#FFFF00','#00FFCC'];
+let curTpl=edTpls[0], edCols=[ ];
 
 function initEd(){
     renderEdChips(); renderEdCols(); updEd();
@@ -285,28 +291,87 @@ function renderEdChips(){
     });
 }
 function renderEdCols(){
-    const g=document.getElementById('ec-grid'); g.innerHTML='';
-    edCols.forEach((c,i)=>{
-        const item=document.createElement('div'); item.className='ec-item';
-        item.innerHTML=`<input type="color" class="ec-sw" value="${c}"><span class="ec-lb">Color ${i+1}</span><span class="ec-rm">Remove</span>`;
-        item.querySelector('input').addEventListener('input',e=>{edCols[i]=e.target.value;updEd();});
-        item.querySelector('.ec-rm').onclick=()=>{edCols.splice(i,1);renderEdCols();updEd();};
+    const g = document.getElementById('ec-grid');
+    g.innerHTML = '';
+    
+    // ✅ نجمع كل الألوان الممكنة من جميع القوالب
+    let allPossibleColors = new Set();
+    edTpls.forEach(tpl => {
+        const colorsInTpl = tpl.tpl.match(/\[([0-9A-Fa-f]{6})\]/g) || [];
+        colorsInTpl.forEach(c => {
+            allPossibleColors.add('#' + c.replace(/[\[\]]/g, '').toLowerCase());
+        });
+    });
+    
+    // ✅ حوّل إلى مصفوفة
+    const allColorsArray = [...allPossibleColors];
+    
+    // ✅ إذا edCols فاضية أو فيها عنصر واحد فارغ، املأها بكل الألوان
+    if (edCols.length === 0 || (edCols.length === 1 && edCols[0] === '')) {
+        edCols = allColorsArray.length > 0 ? allColorsArray : ['#FF0000'];
+    }
+    
+    edCols.forEach((c, i) => {
+        if (!c || c === '') return;
+        
+        const item = document.createElement('div');
+        item.className = 'ec-item';
+        item.innerHTML = `
+            <input type="color" class="ec-sw" value="${c}" id="ec-${i}">
+            <span class="ec-lb">لون ${i + 1}</span>
+            ${edCols.length > 1 ? `<span class="ec-rm" data-index="${i}">حذف</span>` : ''}
+        `;
+        
+        item.querySelector('input').addEventListener('input', e => {
+            edCols[i] = e.target.value;
+            updEd();
+        });
+        
+        const rmBtn = item.querySelector('.ec-rm');
+        if (rmBtn) {
+            rmBtn.addEventListener('click', function() {
+                const index = parseInt(this.getAttribute('data-index'));
+                edCols.splice(index, 1);
+                renderEdCols();
+                updEd();
+            });
+        }
+        
         g.appendChild(item);
     });
 }
 function getEdCode(){
-    const n=document.getElementById('ed-name').value||'PRO Player';
-    let c=curTpl.tpl;
-    c=c.replace(/\[NAME_U\]/g,n.toUpperCase()).replace(/\[NAME_L\]/g,n.toLowerCase()).replace(/\[NAME\]/g,n);
+    const n = document.getElementById('ed-name').value || 'PRO Player';
+    let c = curTpl.tpl;
+    
+    // احتفظ بقائمة الأكواد اللونية الأصلية
+    const originalColors = c.match(/\[[0-9A-Fa-f]{6}\]/g) || [];
+    
+    // استبدل الأكواد اللونية الأصلية بالألوان الجديدة من edCols
+    let colorIndex = 0;
+    c = c.replace(/\[[0-9A-Fa-f]{6}\]/g, function(match) {
+        if (colorIndex < edCols.length) {
+            const newColor = '[' + edCols[colorIndex].replace('#', '') + ']';
+            colorIndex++;
+            return newColor;
+        }
+        return match;
+    });
+    
+    // استبدل [NAME] و [NAME_U] و [NAME_L]
+    c = c.replace(/\[NAME_U\]/g, n.toUpperCase())
+         .replace(/\[NAME_L\]/g, n.toLowerCase())
+         .replace(/\[NAME\]/g, n);
+    
     return c;
 }
 function updEd(){
-    const c=getEdCode();
-    document.getElementById('ep-box').innerHTML=renderCode(c);
-    const clean=c.replace(/\[[^\]]+\]/g,'').replace(/\\n|\n/g,'');
-    const cnt=document.getElementById('ep-cnt');
-    cnt.textContent=clean.length+'/50';
-    cnt.style.color=clean.length>50?'#ff3c3c':'#ffd700';
+    const c = getEdCode();
+    document.getElementById('ep-box').innerHTML = renderCode(c);
+    const clean = c.replace(/\[[^\]]+\]/g, '').replace(/\\n|\n/g, '');
+    const cnt = document.getElementById('ep-cnt');
+    cnt.textContent = clean.length + '/50';
+    cnt.style.color = clean.length > 50 ? '#ff3c3c' : '#ffd700';
 }
 function copyEd(){navigator.clipboard.writeText(getEdCode()).then(()=>toast('✅ Bio Copied!'));}
 function shareEd(){const c=getEdCode();if(navigator.share)navigator.share({text:c});else navigator.clipboard.writeText(c).then(()=>toast('✅ Copied!'));}
