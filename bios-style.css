@@ -336,7 +336,7 @@ body.light .tb-name {
 .bio-card {
   background: var(--bg2);
   border: 1px solid var(--bdr);
-  border-radius: var(--r);
+  border-radius:15%;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.25s ease;
@@ -462,7 +462,7 @@ body.light .tb-name {
 .ccat {
   background: var(--bg2);
   border: 1px solid var(--bdr);
-  border-radius: var(--r-sm);
+  border-radius:30%;
   padding: 16px 8px 12px;
   cursor: pointer;
   transition: all 0.22s ease;
@@ -1161,3 +1161,4 @@ body.light .subbar { background: rgba(255,255,255,0.9) }
   .hero-title   { font-size: 22px }
 }
 /*========×××××××=====*/
+
